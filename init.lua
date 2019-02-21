@@ -26,6 +26,7 @@ minetest.register_on_newplayer(function(player)
       irc:say(umsg)
       irc2:say(umsg)
       minetest.after(1, function ()
+         if minetest.get_player_by_name(name) == nil then return end
          minetest.chat_send_player(name, verification.message)
          player:set_pos(verification.holding_location)
       end)
