@@ -47,6 +47,22 @@ minetest.register_on_chat_message(function(name, message)
    return false
 end)
 
+-- Disable the use of /me for unverified users
+local oldme = minetest.registered_chatcommands["me"]
+local oldmefunc = minetest.registered_chatcommands["me"].func
+minetest.override_chatcommand("me", {
+   params = oldme.params,
+   privs = oldme.privs,
+   func = function(name, param)
+      local p = minetest.get_player_privs(name)
+      if p.unverified == nil then
+         return oldmefunc(name, param)
+      else
+         return false, "Only verified users can use /me"
+      end
+   end
+})
+
 -- Disable PMs from unverified users
 local olddef = minetest.registered_chatcommands["msg"]
 local oldfunc = minetest.registered_chatcommands["msg"].func
