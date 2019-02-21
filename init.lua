@@ -21,6 +21,10 @@ minetest.register_on_newplayer(function(player)
    local name = player:get_player_name()
 	if verification.on then
       minetest.set_player_privs(name, {unverified = true, shout = true})
+      local umsg = "Player " .. name .. " is unverified."
+      minetest.chat_send_all(umsg)
+      irc:say(umsg)
+      irc2:say(umsg)
       minetest.after(1, function ()
          minetest.chat_send_player(name, verification.message)
          player:set_pos(verification.holding_location)
