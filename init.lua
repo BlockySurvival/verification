@@ -1,11 +1,19 @@
 verification = {}
-verification.on = false
+verification.on = true
 verification.default_privs = {interact = true, shout = true, home = true}
 verification.release_location = {x = 111, y = 13, z = -507}
 verification.holding_location = {x = 172, y = 29, z = -477}
 verification.message = "Advanced server security is enabled.  Please wait for a moderator to verify you. | " ..
 "Erweiterte Server sicherheit ist aktiviert. Bitte warten Sie, bis ein Moderator Sie bestätigt hat. | " ..
 "La sécurité avancée du serveur est activée. S'il vous plaît attendre un modérateur pour vérifier que vous."
+
+local function announce_player(player, name)
+   local umsg = "Player " .. name .. " is unverified."
+   minetest.chat_send_all(umsg)
+   irc:say(umsg)
+   irc2:say(umsg)
+   minetest.chat_send_player(name, verification.message)
+end
 
 verification.verify = function(name)
    local player = minetest.get_player_by_name(name)
@@ -19,19 +27,25 @@ end
 
 minetest.register_on_newplayer(function(player)
    local name = player:get_player_name()
-	if verification.on then
+   if verification.on then
       minetest.set_player_privs(name, {unverified = true, shout = true})
       minetest.after(1, function ()
-         local umsg = "Player " .. name .. " is unverified."
-         minetest.chat_send_all(umsg)
-         irc:say(umsg)
-         irc2:say(umsg)
          if minetest.get_player_by_name(name) == nil then return end
-         minetest.chat_send_player(name, verification.message)
+         announce_player(player, name)
          player:set_pos(verification.holding_location)
       end)
    else
-      minetest.set_player_privs(name, verification.default_privs)
+   minetest.set_player_privs(name, verification.default_privs)
+   end
+end)
+
+minetest.register_on_joinplayer(function(player)
+   if verification.on then
+      local n = player:get_player_name()
+      minetest.after(1, function()
+         if minetest.get_player_by_name(name) == nil then return end
+         announce_player(player, n)
+      end)
    end
 end)
 
@@ -39,7 +53,7 @@ end)
 minetest.register_on_chat_message(function(name, message)
    local p = minetest.get_player_privs(name)
    if minetest.check_player_privs(name, {unverified = true}) then
-      local cmsg = "<" .. name .. "> " .. message
+      local cmsg = "[unverified] <" .. name .. "> " .. message
       for _, player in ipairs(minetest.get_connected_players()) do
          local n = player:get_player_name()
          if minetest.check_player_privs(n, {basic_privs = true}) then
