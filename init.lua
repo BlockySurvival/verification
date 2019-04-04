@@ -6,6 +6,7 @@ verification.holding_location = {x = 172, y = 29, z = -477}
 verification.message = "Advanced server security is enabled.  Please wait for a moderator to verify you. | " ..
 "Erweiterte Server sicherheit ist aktiviert. Bitte warten Sie, bis ein Moderator Sie bestätigt hat. | " ..
 "La sécurité avancée du serveur est activée. S'il vous plaît attendre un modérateur pour vérifier que vous."
+verification.announced = {}
 
 local function announce_player(player, name)
    local umsg = "Player " .. name .. " is unverified."
@@ -28,6 +29,7 @@ end
 minetest.register_on_newplayer(function(player)
    local name = player:get_player_name()
    if verification.on then
+      verification.announced[name] = true
       minetest.set_player_privs(name, {unverified = true, shout = true})
       minetest.after(1, function ()
          if minetest.get_player_by_name(name) == nil then return end
@@ -35,7 +37,7 @@ minetest.register_on_newplayer(function(player)
          player:set_pos(verification.holding_location)
       end)
    else
-   minetest.set_player_privs(name, verification.default_privs)
+      minetest.set_player_privs(name, verification.default_privs)
    end
 end)
 
@@ -43,7 +45,14 @@ minetest.register_on_joinplayer(function(player)
    if verification.on then
       local n = player:get_player_name()
       minetest.after(1, function()
-         if minetest.get_player_by_name(name) == nil then return end
+         -- If the player is already announced, do nothing
+         if verification.announced[n] then
+            verification.announced[n] = nil
+            return
+         end
+         -- If the player quit, do nothing
+         if minetest.get_player_by_name(n) == nil then return end
+         -- Announce the player
          announce_player(player, n)
       end)
    end
