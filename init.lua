@@ -52,6 +52,8 @@ minetest.register_on_joinplayer(function(player)
          end
          -- If the player quit, do nothing
          if minetest.get_player_by_name(n) == nil then return end
+         -- If the player is verified, do nothing
+         if not minetest.check_player_privs(n, {unverified = true}) then return end
          -- Announce the player
          announce_player(player, n)
       end)
