@@ -82,35 +82,31 @@ minetest.register_on_chat_message(function(name, message)
    return false
 end)
 
--- Disable the use of /me for unverified users
-local oldme = minetest.registered_chatcommands["me"]
-local oldmefunc = minetest.registered_chatcommands["me"].func
-minetest.override_chatcommand("me", {
-   params = oldme.params,
-   privs = oldme.privs,
-   func = function(name, param)
-      if minetest.check_player_privs(name, {unverified = true}) then
-         return false, "Only verified users can use /me"
-      else
-         return oldmefunc(name, param)
-      end
-   end
-})
 
--- Disable PMs from unverified users
-local olddef = minetest.registered_chatcommands["msg"]
-local oldfunc = minetest.registered_chatcommands["msg"].func
-minetest.override_chatcommand("msg", {
-   params = olddef.params,
-   privs = olddef.privs,
-   func = function(name, param)
-      if minetest.check_player_privs(name, {unverified = true}) then
-         return false, "Only verified users can send private messages"
-      else
-         return oldfunc(name, param)
-      end
+local function override_cmd(cmd)
+   local olddef = minetest.registered_chatcommands[cmd]
+   if olddef then
+      minetest.override_chatcommand(cmd, {
+         description = olddef.description,
+         params = olddef.params,
+         privs = olddef.privs,
+         func = function(name, param)
+            if minetest.check_player_privs(name, {unverified = true}) then
+               return false, "Only verified users can use /" .. cmd
+            else
+               return olddef.func(name, param)
+            end
+         end
+      })
    end
-})
+end
+
+-- disable these commands
+override_cmd("me")
+override_cmd("msg")
+override_cmd("killme")
+override_cmd("irc_msg")
+override_cmd("irc2_msg")
 
 -- Verify command
 minetest.register_chatcommand("verify", {
