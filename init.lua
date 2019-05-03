@@ -1,5 +1,25 @@
+local mod_storage = minetest.get_mod_storage()
+
+local function mod_storage_get_bool(name, default)
+   local value = mod_storage:get_string(name)
+   if value == ''
+      then return default
+   else
+      return value == 'true'
+   end
+end
+
+local function mod_storage_set_bool(name, value)
+   if value == true then
+      value = 'true'
+   else
+      value = 'false'
+   end
+   return mod_storage:set_string(name, value)
+end
+
 verification = {}
-verification.on = true
+verification.on = mod_storage_get_bool('on', true)
 verification.default_privs = {interact = true, shout = true, home = true }
 verification.unverified_privs = {unverified = true, shout = true}
 verification.release_location = {x = 111, y = 13, z = -507}
@@ -126,6 +146,7 @@ minetest.register_chatcommand("toggle_verification", {
    privs = {server = true},
    func = function(_, _)
       verification.on = not verification.on
+      mod_storage_set_bool('on', verification.on)
       local status = verification.on and "on" or "off"
       return true, "Player verification is now " .. status
    end
