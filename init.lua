@@ -57,6 +57,12 @@ minetest.register_on_joinplayer(function(player)
          -- Announce the player
          announce_player(player, n)
       end)
+   else
+      local n = player:get_player_name()
+      if minetest.check_player_privs(n, {unverified = true}) then
+         -- if an unverified player joins while verification is off, verify them.
+         verification.verify(n)
+      end
    end
 end)
 
