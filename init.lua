@@ -1,6 +1,7 @@
 verification = {}
 verification.on = true
-verification.default_privs = {interact = true, shout = true, home = true}
+verification.default_privs = {interact = true, shout = true, home = true }
+verification.unverified_privs = {unverified = true, shout = true}
 verification.release_location = {x = 111, y = 13, z = -507}
 verification.holding_location = {x = 172, y = 29, z = -477}
 verification.message = "Advanced server security is enabled.  Please wait for a moderator to verify you. | " ..
@@ -8,7 +9,7 @@ verification.message = "Advanced server security is enabled.  Please wait for a 
 "La sécurité avancée du serveur est activée. S'il vous plaît attendre un modérateur pour vérifier que vous."
 verification.announced = {}
 
-local function announce_player(player, name)
+local function announce_player(name)
    local umsg = "Player " .. name .. " is unverified."
    minetest.chat_send_all(umsg)
    if minetest.get_modpath("irc") then irc:say(umsg) end
@@ -18,7 +19,7 @@ end
 
 verification.verify = function(name)
    local player = minetest.get_player_by_name(name)
-   if player == nil then return false, name .. " is not a valid player." end
+   if player == nil then return false, name .. " is not connected." end
    if not minetest.check_player_privs(name, {unverified = true}) then return false, name .. " is already verified."  end
    minetest.set_player_privs(name, verification.default_privs)
    minetest.chat_send_player(name, "You've been verified! Welcome to Blocky Survival! :D")
@@ -30,10 +31,10 @@ minetest.register_on_newplayer(function(player)
    local name = player:get_player_name()
    if verification.on then
       verification.announced[name] = true
-      minetest.set_player_privs(name, {unverified = true, shout = true})
+      minetest.set_player_privs(name, verification.unverified_privs)
       minetest.after(1, function ()
          if minetest.get_player_by_name(name) == nil then return end
-         announce_player(player, name)
+         announce_player(name)
          player:set_pos(verification.holding_location)
       end)
    else
@@ -42,39 +43,37 @@ minetest.register_on_newplayer(function(player)
 end)
 
 minetest.register_on_joinplayer(function(player)
+   local name = player:get_player_name()
    if verification.on then
-      local n = player:get_player_name()
       minetest.after(1, function()
          -- If the player is already announced, do nothing
-         if verification.announced[n] then
-            verification.announced[n] = nil
+         if verification.announced[name] then
+            verification.announced[name] = nil
             return
          end
          -- If the player quit, do nothing
-         if minetest.get_player_by_name(n) == nil then return end
+         if minetest.get_player_by_name(name) == nil then return end
          -- If the player is verified, do nothing
-         if not minetest.check_player_privs(n, {unverified = true}) then return end
+         if not minetest.check_player_privs(name, {unverified = true}) then return end
          -- Announce the player
-         announce_player(player, n)
+         announce_player(name)
       end)
    else
-      local n = player:get_player_name()
-      if minetest.check_player_privs(n, {unverified = true}) then
+      if minetest.check_player_privs(name, {unverified = true}) then
          -- if an unverified player joins while verification is off, verify them.
-         verification.verify(n)
+         verification.verify(name)
       end
    end
 end)
 
 -- Send messages sent by unverified users to only moderators and admins
 minetest.register_on_chat_message(function(name, message)
-   local p = minetest.get_player_privs(name)
    if minetest.check_player_privs(name, {unverified = true}) then
       local cmsg = "[unverified] <" .. name .. "> " .. message
       for _, player in ipairs(minetest.get_connected_players()) do
-         local n = player:get_player_name()
-         if minetest.check_player_privs(n, {basic_privs = true}) then
-            minetest.chat_send_player(n, minetest.colorize("red", cmsg))
+         local name = player:get_player_name()
+         if minetest.check_player_privs(name, {basic_privs = true}) then
+            minetest.chat_send_player(name, minetest.colorize("red", cmsg))
          end
       end
       minetest.chat_send_player(name, cmsg)
@@ -90,11 +89,10 @@ minetest.override_chatcommand("me", {
    params = oldme.params,
    privs = oldme.privs,
    func = function(name, param)
-      local p = minetest.get_player_privs(name)
-      if p.unverified == nil then
-         return oldmefunc(name, param)
-      else
+      if minetest.check_player_privs(name, {unverified = true}) then
          return false, "Only verified users can use /me"
+      else
+         return oldmefunc(name, param)
       end
    end
 })
@@ -106,11 +104,10 @@ minetest.override_chatcommand("msg", {
    params = olddef.params,
    privs = olddef.privs,
    func = function(name, param)
-      local p = minetest.get_player_privs(name)
-      if p.unverified == nil then
-         return oldfunc(name, param)
-      else
+      if minetest.check_player_privs(name, {unverified = true}) then
          return false, "Only verified users can send private messages"
+      else
+         return oldfunc(name, param)
       end
    end
 })
