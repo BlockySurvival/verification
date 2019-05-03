@@ -104,6 +104,7 @@ end
 -- disable these commands
 override_cmd("me")
 override_cmd("msg")
+override_cmd("tell")
 override_cmd("killme")
 override_cmd("irc_msg")
 override_cmd("irc2_msg")
