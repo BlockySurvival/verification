@@ -1,6 +1,6 @@
 verification = {}
-verification.on = true
-verification.default_privs = {interact = true, shout = true, home = true}
+verification.on = false
+verification.default_privs = {interact = true, shout = true, home = true, tp=true, instruments=true}
 verification.release_location = {x = 111, y = 13, z = -507}
 verification.holding_location = {x = 172, y = 29, z = -477}
 verification.message = "Advanced server security is enabled.  Please wait for a moderator to verify you. | " ..
