@@ -106,7 +106,7 @@ end)
 local function override_cmd(cmd)
    local olddef = minetest.registered_chatcommands[cmd]
    if olddef then
-      local func = def.func
+      local func = olddef.func
       minetest.override_chatcommand(cmd, {
          func = function(name, param)
             if minetest.check_player_privs(name, {unverified = true}) then
