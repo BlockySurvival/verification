@@ -1,2 +1,4 @@
-irc
-irc2
+irc?
+irc2?
+killme?
+mesecons_commandblock?
