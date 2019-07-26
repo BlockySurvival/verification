@@ -20,7 +20,7 @@ end
 
 verification = {}
 verification.on = mod_storage_get_bool('on', true)
-verification.default_privs = {interact = true, shout = true, home = true }
+verification.default_privs = {interact = true, shout = true, home = true, tp=true, instruments=true}
 verification.unverified_privs = {unverified = true, shout = true}
 verification.release_location = {x = 111, y = 13, z = -507}
 verification.holding_location = {x = 172, y = 29, z = -477}
