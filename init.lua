@@ -32,8 +32,8 @@ verification.announced = {}
 local function announce_player(name)
    local umsg = "Player " .. name .. " is unverified."
    minetest.chat_send_all(umsg)
-   if minetest.get_modpath("irc") then irc:say(umsg) end
-   if minetest.get_modpath("irc2") then irc2:say(umsg) end
+   if minetest.global_exists("irc") then irc:say(umsg) end
+   if minetest.global_exists("irc2") then irc2:say(umsg) end
    minetest.chat_send_player(name, verification.message)
 end
 
