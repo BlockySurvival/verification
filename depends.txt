@@ -1,4 +1,4 @@
 irc?
 irc2?
-killme?
+game_commands?
 mesecons_commandblock?
